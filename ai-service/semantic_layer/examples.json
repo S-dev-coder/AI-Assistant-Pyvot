@@ -1,0 +1,30 @@
+[
+  {
+    "question": "What was our total revenue last month?",
+    "sql": "SELECT ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct/100.0)), 2) AS total_revenue FROM order_items oi JOIN orders o ON o.order_id = oi.order_id WHERE o.status NOT IN ('Cancelled','Returned') AND o.order_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month' AND o.order_date < date_trunc('month', CURRENT_DATE)"
+  },
+  {
+    "question": "Top 5 products by revenue",
+    "sql": "SELECT p.product_name, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct/100.0)), 2) AS total_revenue FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status NOT IN ('Cancelled','Returned') GROUP BY p.product_name ORDER BY total_revenue DESC LIMIT 5"
+  },
+  {
+    "question": "Monthly revenue trend for this year",
+    "sql": "SELECT to_char(date_trunc('month', o.order_date), 'YYYY-MM') AS month, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct/100.0)), 2) AS total_revenue FROM order_items oi JOIN orders o ON o.order_id = oi.order_id WHERE o.status NOT IN ('Cancelled','Returned') AND o.order_date >= date_trunc('year', CURRENT_DATE) GROUP BY 1 ORDER BY 1 LIMIT 100"
+  },
+  {
+    "question": "Which category is most profitable?",
+    "sql": "SELECT p.category, ROUND(SUM(oi.quantity * (oi.unit_price * (1 - oi.discount_pct/100.0) - p.unit_cost)), 2) AS total_profit FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status NOT IN ('Cancelled','Returned') GROUP BY p.category ORDER BY total_profit DESC LIMIT 100"
+  },
+  {
+    "question": "How many customers do we have in each country?",
+    "sql": "SELECT country, COUNT(*) AS customer_count FROM customers GROUP BY country ORDER BY customer_count DESC LIMIT 100"
+  },
+  {
+    "question": "Average order value by customer segment",
+    "sql": "SELECT c.segment, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct/100.0)) / COUNT(DISTINCT o.order_id), 2) AS avg_order_value FROM orders o JOIN customers c ON c.customer_id = o.customer_id JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status NOT IN ('Cancelled','Returned') GROUP BY c.segment ORDER BY avg_order_value DESC LIMIT 100"
+  },
+  {
+    "question": "What share of orders got cancelled?",
+    "sql": "SELECT ROUND(COUNT(*) FILTER (WHERE status = 'Cancelled') * 100.0 / COUNT(*), 2) AS cancellation_rate_pct FROM orders"
+  }
+]
