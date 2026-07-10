@@ -24,7 +24,7 @@ Browser ──> Next.js 16 + shadcn/ui (:3000)        chat UI, tables, recharts
                                                   read-only txns, 10s timeout)
 ```
 
-Public URL: a cloudflared tunnel pointed at :3000 (free, no cloud account needed).
+Public URL: an ngrok tunnel pointed at :3000 (free tier).
 
 ## Dataset
 
@@ -59,7 +59,7 @@ DATABASE_URL=postgresql://bi_readonly:bi_readonly_local@localhost:5432/ecommerce
 ## Run
 
 ```bash
-./scripts/start_all.sh    # starts all 3 services + tunnel, prints the public URL
+./scripts/start_all.sh    # starts all 3 services + ngrok tunnel, prints the public URL
 ./scripts/stop_all.sh
 ```
 

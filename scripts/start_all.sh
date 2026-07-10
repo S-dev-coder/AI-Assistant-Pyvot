@@ -18,7 +18,7 @@ echo "starting frontend (:3000)..."
 sleep 5
 curl -sf localhost:5050/api/health >/dev/null && echo "backend + AI service: up" || echo "WARN: backend health failed — check logs/"
 
-echo "starting cloudflared tunnel..."
-(nohup cloudflared tunnel --url http://localhost:3000 > "$ROOT/logs/tunnel.log" 2>&1 &)
-sleep 8
-grep -oE "https://[a-z0-9-]+\.trycloudflare\.com" "$ROOT/logs/tunnel.log" | head -1 || echo "tunnel URL not ready yet — grep logs/tunnel.log in a few seconds"
+echo "starting ngrok tunnel..."
+(nohup ngrok http 3000 --domain=throttle-unsecured-oversweet.ngrok-free.dev --log stdout > "$ROOT/logs/tunnel.log" 2>&1 &)
+sleep 5
+curl -s localhost:4040/api/tunnels | python3 -c "import json,sys; ts=json.load(sys.stdin)['tunnels']; print(ts[0]['public_url'] if ts else 'tunnel URL not ready — curl localhost:4040/api/tunnels in a few seconds')"
