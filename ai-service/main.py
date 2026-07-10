@@ -31,6 +31,8 @@ app = FastAPI(title="Conversational BI — AI Service")
 class AskRequest(BaseModel):
     session_id: str
     question: str
+    # prior answered exchanges [{question, answer_summary, sql}] for follow-ups
+    chat_history: list[dict] = []
 
 
 @app.get("/health")
@@ -59,7 +61,7 @@ def ask(req: AskRequest):
         effective_question = question
 
     try:
-        verdict = clarity.check(effective_question, state["history"])
+        verdict = clarity.check(effective_question, state["history"], req.chat_history)
     except LLMError as e:
         log.error("clarity LLM failure: %s", e)
         return {"type": "error", "message": "The language model is unreachable right now. Please try again."}
@@ -67,6 +69,23 @@ def ask(req: AskRequest):
     if verdict["verdict"] == "IMPOSSIBLE":
         sessions.reset_thread(state)
         return {"type": "fallback", "message": FALLBACK_MESSAGE}
+
+    if verdict["verdict"] == "CONVERSATIONAL":
+        # answerable from the conversation itself — no SQL, no database
+        sessions.reset_thread(state)
+        answer = (verdict.get("direct_answer") or "").strip()
+        if not answer:
+            return {"type": "fallback", "message": FALLBACK_MESSAGE}
+        return {
+            "type": "answer",
+            "summary": answer,
+            "sql": "",
+            "explanation": "Answered from the conversation context — no database query was needed.",
+            "columns": [],
+            "rows": [],
+            "chart": None,
+            "formats": ["text"],
+        }
 
     if verdict["verdict"] == "AMBIGUOUS":
         if state["clarify_count"] >= MAX_CLARIFICATIONS:
@@ -85,7 +104,9 @@ def ask(req: AskRequest):
     error_feedback = None
     for attempt in (1, 2):
         try:
-            gen = generator.generate(effective_question, state["history"], error_feedback)
+            gen = generator.generate(
+                effective_question, state["history"], error_feedback, req.chat_history
+            )
             sql = validate(gen["sql"])
             result = execute(sql)
             break
