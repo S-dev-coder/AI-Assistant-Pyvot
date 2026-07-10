@@ -3,3 +3,6 @@ logs/
 node_modules/
 .venv/
 .next/
+__pycache__/
+*.pyc
+backend/data/
