@@ -19,7 +19,9 @@ class LLMError(Exception):
     pass
 
 
-def chat_json(system: str, user: str, max_tokens: int = 1024) -> dict:
+def chat_json(system: str, user: str, max_tokens: int = 4096) -> dict:
+    # generous budget: reasoning models (GLM-4.7) think before answering, and
+    # thinking tokens count against max_tokens — too small a cap yields empty content
     """One LLM call that must return a JSON object. Tolerant of markdown fences
     and prose around the JSON; retries once on unparseable output."""
     last_err = None

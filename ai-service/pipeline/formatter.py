@@ -54,7 +54,7 @@ def summarize(question: str, sql: str, columns: list, rows: list, row_count: int
         f"Result rows shown ({len(shown)} of {row_count}):\n{shown}"
     )
     try:
-        out = chat_json(_SYSTEM, user, max_tokens=300)
+        out = chat_json(_SYSTEM, user, max_tokens=2048)
         summary = str(out.get("summary", "")).strip()
         if summary:
             return summary
