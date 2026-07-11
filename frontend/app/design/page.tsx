@@ -28,6 +28,10 @@ const STACK_BADGES = [
   ["Python FastAPI", "AI pipeline — best ecosystem for LLM + SQL tooling"],
   ["PostgreSQL 18", "real production engine with a read-only role"],
   ["GLM-4.7 · Ollama Cloud", "free-tier LLM, OpenAI-compatible & swappable"],
+  [
+    "Deployment: local + ngrok",
+    "three services run locally, published on a permanent free ngrok domain — real Postgres instead of a constrained cloud free tier, zero hosting cost",
+  ],
 ]
 
 const SERVICES_CHART = `
