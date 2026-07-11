@@ -62,6 +62,8 @@ app.post('/api/query', async (req, res) => {
     return res.status(400).json({ type: 'error', message: 'question is required' });
   }
 
+  console.log(`[question] ${question.trim()}`);
+
   const existing = incomingConvId ? store.get(incomingConvId) : null;
   const sessionId = existing?.sessionId || incomingSessionId || uuidv4();
   const conversationId = existing?.id || uuidv4();
