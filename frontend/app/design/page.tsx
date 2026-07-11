@@ -386,6 +386,76 @@ export default function DesignPage() {
               Full rationale per layer in section 9 below.
             </p>
           </div>
+
+          <details className="mt-2 rounded-md border bg-card">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-medium select-none hover:text-foreground">
+              Project setup guide — run it yourself from the repo
+            </summary>
+            <div className="flex flex-col gap-3 border-t p-3 text-xs text-muted-foreground">
+              <p>
+                <span className="font-medium text-foreground">
+                  Prerequisites:
+                </span>{" "}
+                Node 20+, Python 3.11+, PostgreSQL 16+, and an API key for any
+                OpenAI-compatible LLM (Ollama Cloud / Groq / Gemini). ngrok is
+                optional — only needed for a public URL.
+              </p>
+
+              <div>
+                <p className="mb-1 font-medium text-foreground">
+                  1 · Clone and load the database
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono">
+                  {`git clone https://github.com/S-dev-coder/AI-Assistant-Pyvot.git
+cd AI-Assistant-Pyvot
+./scripts/setup_db.sh path/to/ecommerce_dataset_postgres.sql`}
+                </pre>
+                <p className="mt-1">
+                  Creates the <code>ecommerce_bi</code> database, shifts all
+                  dates to the current timeline, and creates the read-only{" "}
+                  <code>bi_readonly</code> role.
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-1 font-medium text-foreground">
+                  2 · AI service (Python)
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono">
+                  {`cd ai-service
+python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
+cp .env.example .env   # set LLM_BASE_URL, LLM_MODEL, LLM_API_KEY`}
+                </pre>
+              </div>
+
+              <div>
+                <p className="mb-1 font-medium text-foreground">
+                  3 · Backend & frontend (Node)
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono">
+                  {`cd backend && npm install
+cd ../frontend && npm install && npm run build`}
+                </pre>
+              </div>
+
+              <div>
+                <p className="mb-1 font-medium text-foreground">
+                  4 · Run everything
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-muted p-2 font-mono">
+                  {`./scripts/start_all.sh   # starts all 3 services (+ ngrok) and prints the URL
+./scripts/watch.sh       # optional: live activity monitor in a second terminal
+./scripts/stop_all.sh    # shut everything down`}
+                </pre>
+                <p className="mt-1">
+                  Local URLs: app <code>:3000</code> · backend API{" "}
+                  <code>:5050</code> · AI service <code>:8000</code>. The API
+                  key lives only in <code>ai-service/.env</code> — never
+                  committed.
+                </p>
+              </div>
+            </div>
+          </details>
         </header>
 
         <Section n={1} title="What it does">
