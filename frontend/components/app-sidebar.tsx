@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { ThemeTogglerButton } from "@/components/animate-ui/components/buttons/theme-toggler"
 import { cn } from "@/lib/utils"
 
 type ConversationMeta = {
@@ -78,14 +79,22 @@ export function AppSidebar({ onClose }: { onClose: () => void }) {
     <aside className="flex h-dvh w-full shrink-0 animate-in flex-col border-r bg-background duration-300 slide-in-from-left sm:w-[300px]">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h2 className="text-sm font-semibold">Conversational BI</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          aria-label="Close sidebar"
-        >
-          <PanelLeftClose className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <ThemeTogglerButton
+            variant="ghost"
+            size="sm"
+            modes={["light", "dark"]}
+            aria-label="Toggle light/dark mode"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <PanelLeftClose className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {/* pages */}
