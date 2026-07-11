@@ -288,59 +288,6 @@ const TRACE_ROWS = [
   ],
 ]
 
-const IMPROVEMENT_ROWS = [
-  [
-    "Vector retrieval (pgvector)",
-    "Scales RAG to hundreds of tables — today the whole semantic layer fits in one prompt",
-    "Embed schema chunks, glossary rules and solved examples; similarity-search the question and retrieve only the top-k. Same retrieve() slot in the pipeline.",
-  ],
-  [
-    "Semantic caching",
-    "Repeated and near-duplicate questions answer in milliseconds at zero LLM cost",
-    "Exact-match cache first (Redis), then embedding-similarity lookup against previously answered questions before the pipeline runs.",
-  ],
-  [
-    "Evaluation harness",
-    "Confidence that prompt or model changes don't silently break SQL accuracy",
-    "Golden question→SQL→result set replayed in CI; results diffed against expected values (section 10 is the seed set); an LLM judge scores tricky cases.",
-  ],
-  [
-    "Auth & multi-tenancy",
-    "Each business sees only its own data",
-    "JWT login; tenant id from the token — never the prompt — enforced by Postgres row-level security. bi_readonly already models the permission pattern.",
-  ],
-  [
-    "Streaming responses",
-    "Perceived latency drops from ~15s to instant feedback",
-    "Stream pipeline stage updates over SSE (checking → writing SQL → running…), then stream the summary token by token.",
-  ],
-  [
-    "Observability & cost tracking",
-    "Per-question traces: which stage was slow, what each answer cost",
-    "OpenTelemetry spans per pipeline stage; log tokens per LLM call; dashboard on latency percentiles and cost per answered question.",
-  ],
-  [
-    "User feedback loop (HITL)",
-    "The assistant improves with use",
-    "👍/👎 on every answer; corrected SQL from thumbs-down reviews graduates into examples.json — the golden set grows from real usage.",
-  ],
-  [
-    "Result export & scheduled insights",
-    "BI workflows beyond chat",
-    "CSV/PNG download per answer; saved questions re-run on a schedule (pg_cron / Temporal) with email or Slack delivery.",
-  ],
-  [
-    "Chat store to Postgres",
-    "History survives horizontal scaling",
-    "Swap the JSON file store for a chat schema under a separate writer role — the BI schema stays read-only. store.js is already the single seam.",
-  ],
-  [
-    "Containerized cloud deployment",
-    "One-command reproducible deploys off this laptop",
-    "Dockerfile per service + docker-compose; then any container host (Render, Railway, Fly.io) with managed Postgres (Neon/Supabase).",
-  ],
-]
-
 function Section({
   n,
   title,
@@ -671,21 +618,6 @@ cd ../frontend && npm install && npm run build`}
               <Link href="/">Ask the assistant →</Link>
             </Button>
           </div>
-        </Section>
-
-        <Section
-          n={11}
-          title="Scope of improvements — the roadmap from prototype to product"
-        >
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Deliberate prototype boundaries, and how each one lifts. Every item
-            slots into an architecture seam that already exists — nothing below
-            requires a rewrite.
-          </p>
-          <DocTable
-            headers={["Improvement", "What it adds", "How it slots in"]}
-            rows={IMPROVEMENT_ROWS}
-          />
         </Section>
 
         <footer className="border-t pt-4 pb-8 text-xs text-muted-foreground">
