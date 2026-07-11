@@ -24,8 +24,45 @@ FALLBACK_MESSAGE = (
     "Please rephrase the query or ask another different query"
 )
 MAX_CLARIFICATIONS = 3
+_CLAR_MARKER = "(asked a clarifying question)"
 
 app = FastAPI(title="Conversational BI — AI Service")
+
+
+def _rebuild_thread(chat_history: list[dict]) -> dict | None:
+    """Session state is in-memory; if the service restarted mid-clarification,
+    reconstruct the pending thread from the conversation transcript (whose last
+    assistant entry is the clarifying question we asked)."""
+    msgs = chat_history or []
+    n = len(msgs)
+    if n < 2:
+        return None
+    last = msgs[-1]
+    if last.get("role") != "assistant" or not str(last.get("text", "")).startswith(_CLAR_MARKER):
+        return None
+    pending = str(last["text"])[len(_CLAR_MARKER):].strip()
+    count = 1
+    history: list[dict] = []
+    i = n - 2
+    while i >= 1 and msgs[i].get("role") == "user":
+        prev = msgs[i - 1]
+        if prev.get("role") == "assistant" and str(prev.get("text", "")).startswith(_CLAR_MARKER):
+            history.insert(0, {
+                "q": str(prev["text"])[len(_CLAR_MARKER):].strip(),
+                "a": msgs[i].get("text", ""),
+            })
+            count += 1
+            i -= 2
+        else:
+            break
+    if i < 0 or msgs[i].get("role") != "user":
+        return None
+    return {
+        "original_question": msgs[i].get("text", ""),
+        "pending_question": pending,
+        "clarify_count": count,
+        "history": history,
+    }
 
 
 class AskRequest(BaseModel):
@@ -49,6 +86,13 @@ def ask(req: AskRequest):
         return {"type": "rejected", "message": rejection}
 
     state = sessions.get(req.session_id)
+
+    # Recover a clarification thread lost to a service restart: the transcript
+    # knows we asked a clarifying question even when in-memory state doesn't.
+    if not state["pending_question"]:
+        rebuilt = _rebuild_thread(req.chat_history)
+        if rebuilt:
+            state.update(rebuilt)
 
     # Is this message an answer to a clarifying question, or a new question?
     if state["pending_question"]:
@@ -88,11 +132,18 @@ def ask(req: AskRequest):
         }
 
     if verdict["verdict"] == "AMBIGUOUS":
-        if state["clarify_count"] >= MAX_CLARIFICATIONS:
+        cq = verdict["clarifying_question"] or "Could you rephrase your question with more detail?"
+        # Never re-ask a question the user already answered — if the model tries,
+        # trust the given answer and proceed to generation (which sees the history).
+        answered = {h["q"].strip().lower() for h in state["history"]}
+        if cq.strip().lower() in answered:
+            verdict["verdict"] = "CLEAR"
+        elif state["clarify_count"] >= MAX_CLARIFICATIONS:
             sessions.reset_thread(state)
             return {"type": "fallback", "message": FALLBACK_MESSAGE}
+
+    if verdict["verdict"] == "AMBIGUOUS":
         state["clarify_count"] += 1
-        cq = verdict["clarifying_question"] or "Could you rephrase your question with more detail?"
         state["pending_question"] = cq
         return {
             "type": "clarification",
