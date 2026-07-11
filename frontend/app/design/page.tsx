@@ -193,18 +193,64 @@ const SAFETY_ROWS = [
   ],
 ]
 
-const EXAMPLE_QUERIES = [
-  "What was our total revenue last month?",
-  "Top 5 products by revenue",
-  "Monthly revenue trend for this year",
-  "Which category is most profitable?",
-  "How many customers do we have in each country?",
-  "Average order value by customer segment",
-  "What share of orders got cancelled?",
-  "Top 3 cities by number of orders in India",
-  "How much revenue did we lose to discounts this year?",
-  "Show me the best customers — deliberately ambiguous: triggers ONE clarifying question",
-  "What will the weather be tomorrow? — out of scope: returns the exact fallback message",
+// Expected outputs verified against the live database (July 2026 — the two
+// date-relative queries shift as the calendar moves).
+const EXAMPLE_QUERIES: [string, string, string][] = [
+  [
+    "What was our total revenue last month?",
+    "KPI card counting up to 146,815.25 with the summary “Total revenue was 146,815.25.”",
+    "text (KPI)",
+  ],
+  [
+    "Top 5 products by revenue",
+    "Decor - Board Lite 2,147,525.74 · Footwear - Any 289,541.21 · Cookware - Especially Plus 229,466.95 · Headphones - Spend 225,601.02 · Fragrances - Service Max 130,226.71",
+    "text + table + bar chart",
+  ],
+  [
+    "Monthly revenue trend for this year",
+    "7 monthly points for 2026 — Jan 266,452.70 rising to a May peak of 439,292.18, then Jun 146,815.25 and a partial Jul 15,123.71",
+    "text + table + line chart",
+  ],
+  [
+    "Which category is most profitable?",
+    "Home & Kitchen leads with 1,427,733.44 total profit; Electronics 269,198.08 is a distant second, Sports & Outdoors 131,766.20 last",
+    "text + table + bar chart",
+  ],
+  [
+    "How many customers do we have in each country?",
+    "Canada 95 · USA 81 · Germany 77 · UK 75 · India 72",
+    "text + table + bar chart",
+  ],
+  [
+    "Average order value by customer segment",
+    "Enterprise 1,484.85 · Small Business 1,442.01 · Consumer 1,426.92",
+    "text + table + bar chart",
+  ],
+  [
+    "What share of orders got cancelled?",
+    "“The cancellation rate is 6.5%.”",
+    "text (KPI)",
+  ],
+  [
+    "Top 3 cities by number of orders in India",
+    "Bengaluru 206 · Mumbai 195 · Kolkata 182",
+    "text + table + bar chart",
+  ],
+  [
+    "How much revenue did we lose to discounts this year?",
+    "“Revenue lost to discounts is 81,103.17.”",
+    "text (KPI)",
+  ],
+  [
+    "Show me the best customers",
+    "Deliberately ambiguous → asks ONE clarifying question (“by total revenue or by number of orders?”). Reply “number of orders” → Misty Hansen, Derrick Adams and Michele Lewis tie at 18 orders each",
+    "clarification → answer",
+  ],
+  [
+    "What will the weather be tomorrow?",
+    "Out of scope → the exact message: “I am unable to understand the query. Please rephrase the query or ask another different query”",
+    "fallback (verbatim)",
+  ],
 ]
 
 const TRACE_ROWS = [
@@ -454,12 +500,45 @@ export default function DesignPage() {
           <DocTable headers={["Layer", "Choice", "Why"]} rows={TECH_ROWS} />
         </Section>
 
-        <Section n={10} title="Try it — queries that work today">
-          <ol className="flex list-decimal flex-col gap-1.5 pl-6 text-sm text-muted-foreground">
-            {EXAMPLE_QUERIES.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ol>
+        <Section
+          n={10}
+          title="Try it — queries that work today, with expected output"
+        >
+          <p className="text-sm text-muted-foreground">
+            Expected outputs are real results verified against the live database
+            (as of July 2026 — the two date-relative queries move with the
+            calendar).
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-3 py-2 text-left font-medium">#</th>
+                  <th className="px-3 py-2 text-left font-medium">Ask this</th>
+                  <th className="px-3 py-2 text-left font-medium">
+                    Expected output
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium">
+                    Response shape
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {EXAMPLE_QUERIES.map(([q, expected, shape], i) => (
+                  <tr key={q} className="border-b align-top last:border-0">
+                    <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                    <td className="min-w-48 px-3 py-2 font-medium">{q}</td>
+                    <td className="px-3 py-2 text-muted-foreground">
+                      {expected}
+                    </td>
+                    <td className="px-3 py-2 text-xs whitespace-nowrap text-muted-foreground">
+                      {shape}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="mt-1">
             <Button size="sm" asChild>
               <Link href="/">Ask the assistant →</Link>
