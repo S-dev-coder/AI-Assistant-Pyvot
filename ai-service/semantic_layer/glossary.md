@@ -14,6 +14,8 @@
 - "units sold" / "quantity sold" = SUM(order_items.quantity), same status exclusion.
 
 - "number of orders" / "order count" = COUNT(DISTINCT orders.order_id).
+  Count ALL orders regardless of status unless the user asks otherwise — a cancelled
+  order still happened as an order. (Status exclusions apply to money metrics, not counts.)
 
 - "average order value" (AOV) = revenue / COUNT(DISTINCT order_id), over non-Cancelled/Returned orders.
 

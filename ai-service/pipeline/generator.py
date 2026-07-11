@@ -14,6 +14,12 @@ Hard rules:
   specific customer, product, category, or period being discussed — unless the user
   explicitly changes or broadens the scope. Example: after questions about one customer,
   "graph of items vs date purchased" means THAT customer's items, not everyone's.
+- OPTION ECHO: if the user's message merely echoes an option offered in a recent
+  clarifying question, they are re-asking the SAME underlying question with that
+  option — never a literal standalone question. Example: assistant asked "rank best
+  customers by total revenue or by number of orders?", user chose "total revenue" and
+  got the answer, then says "total number of orders?" → they want the best customers
+  ranked by order count, NOT a global count of orders.
 - Use only tables/columns from the schema. Follow every glossary definition exactly.
 - Give aggregate columns clear snake_case aliases. Round money to 2 decimals.
 - Add LIMIT 100 unless the query returns a single aggregate row.
